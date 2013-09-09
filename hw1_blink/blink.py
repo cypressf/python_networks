@@ -14,11 +14,11 @@ GPIO.setup(OUTPUT_PIN, GPIO.OUT)
 GPIO.setup(INPUT_PIN, GPIO.IN)
 
 led_is_on = 0
-
+input_values = []
 while True:
-	input_value = GPIO.input(INPUT_PIN)
+	input_values.append(GPIO.input(INPUT_PIN))
 	
-	print("output pin #%i is %i" % (OUTPUT_PIN, led_is_on))	
+	print("input pin" + str(input_values))
 	GPIO.output(OUTPUT_PIN, led_is_on)
 	
 	if led_is_on:
