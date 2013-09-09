@@ -55,20 +55,8 @@ Create your virtualenv
 mkvirtualenv networks
 ```
 
-You need the [RPi.GPIO python package](https://pypi.python.org/pypi/RPi.GPIO) in order to control the GPIO pins on the Raspberry Pi. I had an error when I tried installing it using `pip`, so I had to download and build from the [AUR RPi.GPIO package](https://aur.archlinux.org/packages.php?ID=59458).
-
-Install the AUR package by following the [instructions for AUR packages](https://wiki.archlinux.org/index.php/Arch_User_Repository#Installing_packages) in the Arch wiki.
+You need the [RPi.GPIO python package](https://pypi.python.org/pypi/RPi.GPIO) in order to control the GPIO pins on the Raspberry Pi. I had [an error](https://code.google.com/p/raspberry-gpio-python/issues/detail?id=48) when I tried installing it using `pip`. Now the error has a workaround, you can easily install using `pip`.
 
 ```
-wget https://aur.archlinux.org/packages/ra/raspberry-gpio-python/raspberry-gpio-python.tar.gz
-tar -xzf raspberry-gpio-python.tar.gz
-cd raspberry-gpio-python
-makepkg -a
-packman -S raspberry-gpio-python-0.5.3a-1-any.pkg.tar.xz
-```
-
-Now navigate to the src directory, and run the python distribute `setup.py` file to install the python package in your virtualenv.
-
-```
-sudo python setup.py install
+pip install RPi.GPIO --pre
 ```
