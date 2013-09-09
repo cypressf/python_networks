@@ -6,23 +6,22 @@ except RuntimeError:
 import time
 
 INPUT_PIN = 24
-OUTPUT_PIN = 26
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
-GPIO.setup(OUTPUT_PIN, GPIO.OUT)
 GPIO.setup(INPUT_PIN, GPIO.IN)
 
-led_is_on = 0
 input_values = []
 while True:
-	input_values.append(GPIO.input(INPUT_PIN))
+	input_value = GPIO.input(INPUT_PIN)
+
+	if not input_values:
+		input_values.append(input_value)
+		print(input_value)
+
+	elif input_value != input_values[-1]:
+		input_values.append(input_value)
+		print(input_value)
 	
-	print("input pin" + str(input_values))
-	GPIO.output(OUTPUT_PIN, led_is_on)
-	
-	if led_is_on:
-		led_is_on = 0
-	else:
-		led_is_on = 1
-	time.sleep(1)
+
+	time.sleep(.0001)
