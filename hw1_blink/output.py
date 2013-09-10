@@ -6,10 +6,12 @@ except RuntimeError:
 import time
 
 OUTPUT_PIN = 26
+minimum_blink_time = 50 # milliseconds
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 GPIO.setup(OUTPUT_PIN, GPIO.OUT)
+
 
 led_is_on = 0
 while True:
@@ -19,4 +21,4 @@ while True:
 		led_is_on = 0
 	else:
 		led_is_on = 1
-	time.sleep(0.06)
+	time.sleep(minimum_blink_time / 1000)
