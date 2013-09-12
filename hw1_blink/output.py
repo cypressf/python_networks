@@ -6,7 +6,7 @@ except RuntimeError:
 import time
 
 OUTPUT_PIN = 26
-minimum_blink_time = 100 # milliseconds
+minimum_blink_time = 1000 # milliseconds
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
@@ -48,9 +48,10 @@ morse_code = {
 	"8": [1,1,1,0,1,1,1,0,1,1,1,0,1,0,1,0,0,0],
 	"9": [1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,0,0],
 	"0": [1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,0,0],
-	" ": [0, 0, 0, 0]
+	" ": [0, 0, 0, 0],
+	"/": [1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0]
 }
-message = "hey this is cypress"
+message = "e tie /"
 bits = []
 for character in message:
 	if character in morse_code:
