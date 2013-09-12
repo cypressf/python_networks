@@ -5,13 +5,9 @@ except RuntimeError:
 
 from multiprocessing import Process, Queue
 import time
-import atexit
-
-ADDRESS = "e"
-MINIMUM_BLINK_TIME = 1000
 
 class Transmitter:
-	def __init__(self, output_pin=26, minimum_blink_time=MINIMUM_BLINK_TIME):
+	def __init__(self, output_pin=26, minimum_blink_time=100):
 		self.output_pin = output_pin
 		GPIO.setmode(GPIO.BOARD)
 		GPIO.setwarnings(False)
@@ -83,10 +79,3 @@ class Transmitter:
 
 	def cleanup(self):
 		self.running = False
-
-if __name__ == '__main__':
-	transmitter = Transmitter()
-	atexit.register(transmitter.cleanup)
-	while True:
-		message = input("message: ")
-		transmitter.send_message(message, ADDRESS)

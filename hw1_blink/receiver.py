@@ -2,33 +2,30 @@ try:
     import RPi.GPIO as GPIO
 except RuntimeError:
     print("Error importing RPi.GPIO!  This is probably because you need superuser privileges.  You can achieve this by using 'sudo' to run your script")
-from multiprocessing import Process
+from multiprocessing import Process, Queue
 
 import time
-
-INPUT_PIN = 24
-minimum_blink_time = 1000 # milliseconds
-
-GPIO.setmode(GPIO.BOARD)
-GPIO.setwarnings(False)
-GPIO.setup(INPUT_PIN, GPIO.IN)
 
 input_values = []
 words = []
 
-class Decoder:
+class Receiver:
 	"""
 	Decodes an incomming morse code message
 	"""
 
-	def __init__(self):
+	def __init__(self, address="c", input_pin=24, transmitter):
 		self.body = ""
 		self.header = ""
-		address = "c"
-		is_first_word = True
+		self.address = address
 		self.bits = []
 		self.waiting_for_new_word = True
 		self.waiting_for_header = True
+		self.transmitter = transmitter
+		self.input_pin = input_pin
+		GPIO.setmode(GPIO.BOARD)
+		GPIO.setwarnings(False)
+		GPIO.setup(self.input_pin, GPIO.IN)
 		self.morse_code = {
 			"10111": "a",
 			"111010101": "b",
@@ -113,21 +110,3 @@ class Decoder:
 		else:
 			print(bitstring, "<no match>")
 		self.bits = []
-
-
-decoder = Decoder()
-start_time = time.time()
-previous_num_intervals = 0
-while True:
-	input_value = GPIO.input(INPUT_PIN)
-	if input_value:
-		input_value = 0
-	else:
-		input_value = 1
-	time_passed = (time.time() - start_time) * 1000
-	num_intervals = int(time_passed / minimum_blink_time)
-	if num_intervals > previous_num_intervals:
-		input_values.append(input_value)
-		previous_num_intervals = num_intervals
-		decoder.add_bit(input_value)
-	time.sleep(0.001)
