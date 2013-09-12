@@ -2,11 +2,12 @@ try:
     import RPi.GPIO as GPIO
 except RuntimeError:
     print("Error importing RPi.GPIO!  This is probably because you need superuser privileges.  You can achieve this by using 'sudo' to run your script")
+from multiprocessing import Process
 
 import time
 
 INPUT_PIN = 24
-minimum_blink_time = 100 # milliseconds
+minimum_blink_time = 1000 # milliseconds
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
@@ -21,9 +22,13 @@ class Decoder:
 	"""
 
 	def __init__(self):
-		self.text = ""
+		self.body = ""
+		self.header = ""
+		address = "c"
+		is_first_word = True
 		self.bits = []
 		self.waiting_for_new_word = True
+		self.waiting_for_header = True
 		self.morse_code = {
 			"10111": "a",
 			"111010101": "b",
@@ -60,7 +65,8 @@ class Decoder:
 			"1110111010101": "7",
 			"111011101110101": "8",
 			"11101110111011101": "9",
-			"1110111011101110111": "0"
+			"1110111011101110111": "0",
+			"101010111010111": "/"
 		}
 
 	def add_bit(self, bit):
@@ -74,19 +80,39 @@ class Decoder:
 
 		if self.bits[-7:] == [0,0,0,0]:
 			# starting a new word
-			self.text += " "
-			self.bits = []
-			self.waiting_for_new_word = True
+			self.add_space()
 
 		elif self.bits[-3:] == [0,0,0] and 1 in self.bits:
 			# starting new character
-			bitstring = "".join([str(bit) for bit in self.bits[:-3]])
-			if bitstring in self.morse_code:
-				self.text += self.morse_code[bitstring]
-				print(self.text)
+			self.add_character()
+
+		print(self.bits)
+
+	def add_space(self):
+		# if this is the end of the header,
+		# check the address
+		if self.waiting_for_header:
+			self.waiting_for_header = False
+			self.
+
+		self.body += " "
+		self.bits = []
+		self.waiting_for_new_word = True
+
+
+	def add_character(self):
+		bitstring = "".join([str(bit) for bit in self.bits[:-3]])
+		if bitstring in self.morse_code:
+			if self.morse_code(bitstring) == "/":
+				# end of message character
+				self.waiting_for_header = True
+				print(bitstring, "<end of message>")
 			else:
-				print(bitstring, "<no match>")
-			self.bits = []
+				self.body += self.morse_code[bitstring]
+				print(self.body)
+		else:
+			print(bitstring, "<no match>")
+		self.bits = []
 
 
 decoder = Decoder()
