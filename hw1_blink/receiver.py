@@ -14,7 +14,7 @@ class Receiver:
 	Decodes an incomming morse code message
 	"""
 
-	def __init__(self, address="c", input_pin=24, transmitter):
+	def __init__(self, address="c", input_pin=24, minimum_blink_time=100, transmitter):
 		self.body = ""
 		self.header = ""
 		self.address = address
@@ -66,17 +66,28 @@ class Receiver:
 			"101010111010111": "/"
 		}
 
+		self.process = Process(target=self.read_loop)
+		self.process.start()
+
 	def add_bit(self, bit):
+		"""
+		Given a new bit, process the bit queue.
+		"""
+		# A new word is arriving
 		if bit == 1 and self.waiting_for_new_word:
 			self.waiting_for_new_word = False
 
+		# We're waiting for a new word, and there is a stream
+		# of 0s, so lets just ignore all of them. It's silence.
 		if bit == 0 and self.waiting_for_new_word:
 			self.bits = []
+
+		# A new bit arrived! Append it to our bits list.
 		else:
 			self.bits.append(bit)
 
+		# We received seven 0s in a row, which means we insert a space.
 		if self.bits[-7:] == [0,0,0,0]:
-			# starting a new word
 			self.add_space()
 
 		elif self.bits[-3:] == [0,0,0] and 1 in self.bits:
@@ -86,27 +97,81 @@ class Receiver:
 		print(self.bits)
 
 	def add_space(self):
-		# if this is the end of the header,
-		# check the address
+		# If this is the end of the header, check the address.
 		if self.waiting_for_header:
 			self.waiting_for_header = False
-			self.
 
-		self.body += " "
+			# the message is addressed to us!
+			if self.header == self.address:
+				print("Here comes our message!")
+			else:
+				print("Forwarding message to", self.header)
+
+		# this is an ordinary space in the body
+		elif self.header == self.address:
+			self.body += " "
+		
+		else:
+			self.transmitter.send(" ")
+		
+		# clear the bit queue
 		self.bits = []
 		self.waiting_for_new_word = True
-
 
 	def add_character(self):
 		bitstring = "".join([str(bit) for bit in self.bits[:-3]])
 		if bitstring in self.morse_code:
-			if self.morse_code(bitstring) == "/":
-				# end of message character
-				self.waiting_for_header = True
-				print(bitstring, "<end of message>")
-			else:
-				self.body += self.morse_code[bitstring]
+			character = self.morse_code[bitstring]
+
+			# we're reading in the header right now
+			elif self.waiting_for_header:
+				self.header += character
+
+			# we're reading in the body right now
+			elif self.header == self.address:
+				# end of message. wait for the next header
+				if character == "/":
+					self.waiting_for_header = True
+					print(bitstring, "<end of message>")
+				else:
+					self.body += character
 				print(self.body)
+
+			# we need to pass the message along to someone else
+			else:
+				self.transmitter.send(character)
+
 		else:
 			print(bitstring, "<no match>")
 		self.bits = []
+
+	def cleanup(self):
+		"""
+		So the child process doesn't live forever
+		"""
+		self.running = False
+
+	def read_loop(self):
+		"""
+		Continually read the input
+		"""
+		while self.running:
+			start_time = time.time()
+			previous_num_intervals = 0
+			input_value = GPIO.input(self.input_pin)
+			
+			# flip input, so LIGHT is 1, DARK is 0
+			if input_value:
+				input_value = 0
+			else:
+				input_value = 1
+
+			time_passed = (time.time() - start_time) * 1000
+			num_intervals = int(time_passed / minimum_blink_time)
+			if num_intervals > previous_num_intervals:
+				input_values.append(input_value)
+				previous_num_intervals = num_intervals
+				self.add_bit(input_value)
+
+			# so we don't max out the CPU
+			time.sleep(0.001)
