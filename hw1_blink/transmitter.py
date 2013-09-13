@@ -64,9 +64,15 @@ class Transmitter:
 
 	def send(self, message):
 		"""
-		Given a message body and address to send, add it to the queue, and send it when ready.
+		Given a message body to send, add it to the queue to send to the default address, and send it when ready.
 		"""
 		message_string = self.send_address + " " + message + " /"
+		self.add_to_queue(message_string)
+
+	def add_to_queue(self, message_string):
+		"""
+		Add a string to the queue
+		"""
 		for character in message_string:
 			if character in self.morse_code:
 				morse_code_list = self.morse_code[character]

@@ -14,13 +14,15 @@ class Receiver:
 	Decodes an incomming morse code message
 	"""
 
-	def __init__(self, address="c", input_pin=24, minimum_blink_time=100, transmitter):
+	def __init__(self, transmitter, address="c", input_pin=24, minimum_blink_time=100):
 		self.body = ""
 		self.header = ""
 		self.address = address
+		self.running = True
 		self.bits = []
 		self.waiting_for_new_word = True
 		self.waiting_for_header = True
+		self.minimum_blink_time = minimum_blink_time
 		self.transmitter = transmitter
 		self.input_pin = input_pin
 		GPIO.setmode(GPIO.BOARD)
@@ -93,8 +95,8 @@ class Receiver:
 		elif self.bits[-3:] == [0,0,0] and 1 in self.bits:
 			# starting new character
 			self.add_character()
+		
 
-		print(self.bits)
 
 	def add_space(self):
 		# If this is the end of the header, check the address.
@@ -104,15 +106,19 @@ class Receiver:
 			# the message is addressed to us!
 			if self.header == self.address:
 				print("Here comes our message!")
+
+			# the message is not addressed to us. forward the header
 			else:
-				print("Forwarding message to", self.header)
+				print("\nForwarding a message to", "c")
+				self.transmitter.add_to_queue("c" + " ")
 
 		# this is an ordinary space in the body
 		elif self.header == self.address:
 			self.body += " "
 		
 		else:
-			self.transmitter.send(" ")
+			self.body += " "
+			self.transmitter.add_to_queue(" ")
 		
 		# clear the bit queue
 		self.bits = []
@@ -124,14 +130,16 @@ class Receiver:
 			character = self.morse_code[bitstring]
 
 			# we're reading in the header right now
-			elif self.waiting_for_header:
+			if self.waiting_for_header:
 				self.header += character
 
-			# we're reading in the body right now
+			# we're reading in the body right now, and it's our message
 			elif self.header == self.address:
 				# end of message. wait for the next header
 				if character == "/":
 					self.waiting_for_header = True
+					self.header = ""
+					self.body = ""
 					print(bitstring, "<end of message>")
 				else:
 					self.body += character
@@ -139,7 +147,15 @@ class Receiver:
 
 			# we need to pass the message along to someone else
 			else:
-				self.transmitter.send(character)
+				if character == "/":
+					self.waiting_for_header = True
+					self.header = ""
+					self.body = ""
+					print(bitstring, "<end of message>")
+				else:
+					self.body += character
+				print(self.body)
+				self.transmitter.add_to_queue(character)
 
 		else:
 			print(bitstring, "<no match>")
@@ -155,9 +171,10 @@ class Receiver:
 		"""
 		Continually read the input
 		"""
+		start_time = time.time()
+		previous_num_intervals = 0
+
 		while self.running:
-			start_time = time.time()
-			previous_num_intervals = 0
 			input_value = GPIO.input(self.input_pin)
 			
 			# flip input, so LIGHT is 1, DARK is 0
@@ -167,7 +184,8 @@ class Receiver:
 				input_value = 1
 
 			time_passed = (time.time() - start_time) * 1000
-			num_intervals = int(time_passed / minimum_blink_time)
+			num_intervals = int(time_passed / self.minimum_blink_time)
+
 			if num_intervals > previous_num_intervals:
 				input_values.append(input_value)
 				previous_num_intervals = num_intervals
