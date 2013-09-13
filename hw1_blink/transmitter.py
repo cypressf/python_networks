@@ -7,7 +7,7 @@ from multiprocessing import Process, Queue
 import time
 
 class Transmitter:
-	def __init__(self, output_pin=26, minimum_blink_time=100):
+	def __init__(self, output_pin=26, minimum_blink_time=100, send_address="e"):
 		self.output_pin = output_pin
 		GPIO.setmode(GPIO.BOARD)
 		GPIO.setwarnings(False)
@@ -15,6 +15,7 @@ class Transmitter:
 		self.minimum_blink_time = minimum_blink_time # milliseconds
 		self.bit_queue = Queue()
 		self.running = True
+		self.send_address = send_address
 		self.morse_code = {
 			"a": [1,0,1,1,1,0,0,0],
 			"b": [1,1,1,0,1,0,1,0,1,0,0,0],
@@ -56,22 +57,23 @@ class Transmitter:
 			"/": [1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,0,0]
 		}
 
-		self.process = Process(target=self.message_loop)
-		self.process.start()
+		self.send_loop = Process(target=self.process_queue)
+
+		self.send_loop.start()
 
 
-	def send_message(self, message, address):
+	def send(self, message):
 		"""
 		Given a message body and address to send, add it to the queue, and send it when ready.
 		"""
-		message_string = address + " " + message + " /"
+		message_string = self.send_address + " " + message + " /"
 		for character in message_string:
 			if character in self.morse_code:
 				morse_code_list = self.morse_code[character]
 				for bit in morse_code_list:
 					self.bit_queue.put(bit)
 
-	def message_loop(self):
+	def process_queue(self):
 		while self.running:
 			led_state = int(self.bit_queue.get())
 			GPIO.output(self.output_pin, led_state)
