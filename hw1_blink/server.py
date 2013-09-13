@@ -4,7 +4,7 @@ import atexit
 
 SEND_ADDRESS = "e"
 RECEIVE_ADDRESS = "c"
-MINIMUM_BLINK_TIME = 500
+MINIMUM_BLINK_TIME = 300
 
 if __name__ == '__main__':
 	transmitter = Transmitter(minimum_blink_time = MINIMUM_BLINK_TIME, send_address = SEND_ADDRESS)

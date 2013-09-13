@@ -87,3 +87,4 @@ class Transmitter:
 
 	def cleanup(self):
 		self.running = False
+		GPIO.output(self.output_pin, 0)

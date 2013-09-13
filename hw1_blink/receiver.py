@@ -109,8 +109,8 @@ class Receiver:
 
 			# the message is not addressed to us. forward the header
 			else:
-				print("\nForwarding a message to", "c")
-				self.transmitter.add_to_queue("c" + " ")
+				print("\nForwarding a message to", self.header)
+				self.transmitter.add_to_queue(self.header + " ")
 
 		# this is an ordinary space in the body
 		elif self.header == self.address:
@@ -137,6 +137,7 @@ class Receiver:
 			elif self.header == self.address:
 				# end of message. wait for the next header
 				if character == "/":
+					self.waiting_for_new_word = True
 					self.waiting_for_header = True
 					self.header = ""
 					self.body = ""
@@ -148,6 +149,7 @@ class Receiver:
 			# we need to pass the message along to someone else
 			else:
 				if character == "/":
+					self.waiting_for_new_word = True
 					self.waiting_for_header = True
 					self.header = ""
 					self.body = ""
