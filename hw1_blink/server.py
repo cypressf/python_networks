@@ -2,9 +2,9 @@ from transmitter import Transmitter
 from receiver import Receiver
 import atexit
 
-SEND_ADDRESS = "e"
+SEND_ADDRESS = "1"
 RECEIVE_ADDRESS = "c"
-MINIMUM_BLINK_TIME = 300
+MINIMUM_BLINK_TIME = 1000
 
 if __name__ == '__main__':
 	transmitter = Transmitter(minimum_blink_time = MINIMUM_BLINK_TIME, send_address = SEND_ADDRESS)
