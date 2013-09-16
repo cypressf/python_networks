@@ -87,6 +87,7 @@ class Receiver:
 		# A new bit arrived! Append it to our bits list.
 		else:
 			self.bits.append(bit)
+			print(self.bits)
 
 		# We received seven 0s in a row, which means we insert a space.
 		if self.bits[-7:] == [0,0,0,0]:

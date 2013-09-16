@@ -2,7 +2,7 @@ from transmitter import Transmitter
 from receiver import Receiver
 import atexit
 
-SEND_ADDRESS = "1"
+SEND_ADDRESS = "c"
 RECEIVE_ADDRESS = "c"
 MINIMUM_BLINK_TIME = 1000
 

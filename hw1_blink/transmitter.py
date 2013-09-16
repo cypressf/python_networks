@@ -83,6 +83,7 @@ class Transmitter:
 		while self.running:
 			led_state = int(self.bit_queue.get())
 			GPIO.output(self.output_pin, led_state)
+			print(led_state)
 			time.sleep(self.minimum_blink_time / 1000)
 
 	def cleanup(self):
