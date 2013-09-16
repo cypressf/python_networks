@@ -13,6 +13,7 @@ if __name__ == '__main__':
 	def cleanup():
 		transmitter.cleanup()
 		receiver.cleanup()
+		GPIO.cleanup()
 
 	atexit.register(cleanup)
 
