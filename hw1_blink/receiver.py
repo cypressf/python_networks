@@ -19,7 +19,7 @@ class Receiver:
 		self.header = ""
 		self.address = address
 		self.running = True
-		self.bits = []
+		self.input_queue = Queue()
 		self.waiting_for_new_word = True
 		self.waiting_for_header = True
 		self.minimum_blink_time = minimum_blink_time
@@ -68,6 +68,7 @@ class Receiver:
 			"101010111010111": "/"
 		}
 
+	def run(self):
 		self.process = Process(target=self.read_loop)
 		self.process.start()
 
@@ -170,29 +171,20 @@ class Receiver:
 		"""
 		self.running = False
 
-	def read_loop(self):
+
+	def read_input(self):
 		"""
 		Continually read the input
 		"""
 		start_time = time.time()
-		previous_num_intervals = 0
+		previous_input = GPIO.input(self.input_pin)
 
 		while self.running:
-			input_value = GPIO.input(self.input_pin)
-			
-			# flip input, so LIGHT is 1, DARK is 0
-			if input_value:
-				input_value = 0
-			else:
-				input_value = 1
+			GPIO.wait_for_edge(GPIO.BOTH)
+			current_input = GPIO.input(self.input_pin)
+			end_time = time.time()
+			self.input_queue.put((end_time - start_time, previous_input))
+			previous_input = current_input
+			start_time = end_time
 
-			time_passed = (time.time() - start_time) * 1000
-			num_intervals = int(time_passed / self.minimum_blink_time)
 
-			if num_intervals > previous_num_intervals:
-				input_values.append(input_value)
-				previous_num_intervals = num_intervals
-				self.add_bit(input_value)
-
-			# so we don't max out the CPU
-			time.sleep(0.001)
