@@ -6,6 +6,8 @@ An ongoing project for a networks class at Olin College of Engineering.
 
 Install Arch on your Raspberry Pi SD card following this guide: [http://archlinuxarm.org/platforms/armv6/raspberry-pi](http://archlinuxarm.org/platforms/armv6/raspberry-pi).
 
+If your SD card is larger than 2GB, you'll want to resize the root partition to take up all the space on your card. You can use gparted, or (risky) [resize it while mounted](http://jan.alphadev.net/post/53594241659/growing-the-rpi-root-partition).
+
 
 Create a non-root user
 
